@@ -18,6 +18,4 @@
 Route::get('/', 'PagesController@home');
 Route::get('/about', 'PagesController@about');
 Route::get('/contact', 'PagesController@contact');
-Route::get('/properties', function(){
-  return response()->json(['Red', 'Green', 'Blue']);
-});
+Route::get('/properties', 'SearchController@index');
