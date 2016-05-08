@@ -19,3 +19,5 @@ Route::get('/', 'PagesController@home');
 Route::get('/about', 'PagesController@about');
 Route::get('/contact', 'PagesController@contact');
 Route::get('/properties', 'SearchController@index');
+Route::get('/properties/search', 'SearchController@search');
+Route::get('/properties/{property}', 'SearchController@show');
