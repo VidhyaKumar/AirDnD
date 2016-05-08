@@ -9,15 +9,15 @@ use Illuminate\Database\QueryException;
 
 class SearchController extends Controller
 {
-    public function index()
+    public function index() // list all data
     {
       $properties = Property::all();
       return $properties;
     }
 
-    public function search(Request $request)
+    public function search(Request $request) // search method
     {
-      $params = $request->input();
+      $params = array_filter($request->input());
       $name = isset($params['name']) ? $params['name'] : false;
       $min = isset($params['min']) ? $params['min'] : 0;
       $max = isset($params['max']) ? $params['max'] : 600000;
@@ -35,16 +35,16 @@ class SearchController extends Controller
                   ->whereBetween('price', [$min, $max])
                   ->take(10)->get();
       }
-
+      sleep(3); // simulate server load
       return $query;
     }
 
-    public function show(Property $property)
+    public function show(Property $property) // show specific data based on ID
     {
       return $property;
     }
 
-    private function validateRequest($params)
+    private function validateRequest($params) // validate GET paramaters
     {
       if (empty($params)) { // validates empty request
         abort(400, 'Invalid search paramaters.');
