@@ -11,32 +11,30 @@ class SearchController extends Controller
 {
     public function index() // list all data
     {
-      $properties = Property::all();
-      return $properties;
+      return Property::all();
     }
 
     public function search(Request $request) // search method
     {
-      $params = array_filter($request->input());
-      $name = isset($params['name']) ? $params['name'] : false;
-      $min = isset($params['min']) ? $params['min'] : 0;
-      $max = isset($params['max']) ? $params['max'] : 600000;
-      $params = $this->validateRequest($params);
+      $params = $this->validateRequest($request);
+      $name = $request->input('name');
+      $min = $request->input('min') ?? 0;
+      $max = $request->input('max') ?? 600000;
+      $query = new Property;
 
-      if ($name && !empty($params)) { // search including name
-        $query = Property::where($params)
-                  ->where('name', 'like', "%{$name}%")
-                  ->whereBetween('price', [$min, $max])
-                  ->get();
-      } elseif ($name && empty($params)) { // search only name
-        $query = Property::where('name', 'like', "%{$name}%")->get();
+      if (isset($name, $params)) { // search including name
+        $query = $query->where($params)
+                 ->where('name', 'like', "%{$name}%")
+                 ->whereBetween('price', [$min, $max]);
+      } elseif (isset($name) && empty($params)) { // search only name
+        $query = $query->where('name', 'like', "%{$name}%");
       } else { // search excluding name
-        $query = Property::where($params)
-                  ->whereBetween('price', [$min, $max])
-                  ->take(10)->get();
+        $query = $query->where($params)
+                 ->whereBetween('price', [$min, $max])
+                 ->take(10);
       }
-      sleep(3); // simulate server load
-      return $query;
+      sleep(2); // simulate server load
+      return $query->get();
     }
 
     public function show(Property $property) // show specific data based on ID
@@ -44,18 +42,10 @@ class SearchController extends Controller
       return $property;
     }
 
-    private function validateRequest($params) // validate GET paramaters
+    private function validateRequest($request) // validate GET paramaters
     {
-      if (empty($params)) { // validates empty request
-        abort(400, 'Invalid search paramaters.');
-      } else { // validates invalid paramater request
-        unset($params['min'], $params['max'], $params['name']);
-        try {
-          $query = Property::where($params)->get();
-        } catch (QueryException $e) {
-          abort(400, 'Invalid search paramaters.');
-        }
-      }
+      $whitelist = ['bedrooms','bathrooms','storeys','garages'];
+      $params = array_filter($request->only($whitelist));
       return $params;
     }
 }
